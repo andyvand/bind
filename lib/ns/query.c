@@ -32,7 +32,6 @@
 #include <dns/cache.h>
 #include <dns/db.h>
 #include <dns/dlz.h>
-#include <dns/dns64.h>
 #include <dns/dnsrps.h>
 #include <dns/dnssec.h>
 #include <dns/events.h>
@@ -8491,12 +8490,6 @@ query_coveringnsec(query_ctx_t *qctx) {
 		if (qctx->type == dns_rdatatype_any) {	/* XXX not yet */
 			goto cleanup;
 		}
-		if (!ISC_LIST_EMPTY(qctx->view->dns64) &&
-		    (qctx->type == dns_rdatatype_a ||
-		     qctx->type == dns_rdatatype_aaaa)) /* XXX not yet */
-		{
-			goto cleanup;
-		}
 		if (!qctx->resuming && !STALE(qctx->rdataset) &&
 		    qctx->rdataset->ttl == 0 && RECURSIONOK(qctx->client))
 		{
@@ -8553,12 +8546,6 @@ query_coveringnsec(query_ctx_t *qctx) {
 	switch (result) {
 	case ISC_R_SUCCESS:
 		if (qctx->type == dns_rdatatype_any) {	/* XXX not yet */
-			goto cleanup;
-		}
-		if (!ISC_LIST_EMPTY(qctx->view->dns64) &&
-		    (qctx->type == dns_rdatatype_a ||
-		     qctx->type == dns_rdatatype_aaaa)) /* XXX not yet */
-		{
 			goto cleanup;
 		}
 		/* FALLTHROUGH */
