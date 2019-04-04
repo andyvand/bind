@@ -52,39 +52,27 @@ isc_hash_function_test(void **state) {
 
 	UNUSED(state);
 
-	/* Incremental hashing */
-
-	h1 = isc_hash_function(NULL, 0, true, NULL);
-	h1 = isc_hash_function("This ", 5, true, &h1);
-	h1 = isc_hash_function("is ", 3, true, &h1);
-	h1 = isc_hash_function("a long test", 12, true, &h1);
-
-	h2 = isc_hash_function("This is a long test", 20,
-			       true, NULL);
-
-	assert_int_equal(h1, h2);
-
 	/* Immutability of hash function */
-	h1 = isc_hash_function(NULL, 0, true, NULL);
-	h2 = isc_hash_function(NULL, 0, true, NULL);
+	h1 = isc_hash_function(NULL, 0, true);
+	h2 = isc_hash_function(NULL, 0, true);
 
 	assert_int_equal(h1, h2);
 
 	/* Hash function characteristics */
-	h1 = isc_hash_function("Hello world", 12, true, NULL);
-	h2 = isc_hash_function("Hello world", 12, true, NULL);
+	h1 = isc_hash_function("Hello world", 12, true);
+	h2 = isc_hash_function("Hello world", 12, true);
 
 	assert_int_equal(h1, h2);
 
 	/* Case */
-	h1 = isc_hash_function("Hello world", 12, false, NULL);
-	h2 = isc_hash_function("heLLo WorLd", 12, false, NULL);
+	h1 = isc_hash_function("Hello world", 12, false);
+	h2 = isc_hash_function("heLLo WorLd", 12, false);
 
 	assert_int_equal(h1, h2);
 
 	/* Unequal */
-	h1 = isc_hash_function("Hello world", 12, true, NULL);
-	h2 = isc_hash_function("heLLo WorLd", 12, true, NULL);
+	h1 = isc_hash_function("Hello world", 12, true);
+	h2 = isc_hash_function("heLLo WorLd", 12, true);
 
 	assert_int_not_equal(h1, h2);
 }
@@ -97,62 +85,29 @@ isc_hash_function_reverse_test(void **state) {
 
 	UNUSED(state);
 
-	/* Incremental hashing */
-
-	h1 = isc_hash_function_reverse(NULL, 0, true, NULL);
-	h1 = isc_hash_function_reverse("\000", 1, true, &h1);
-	h1 = isc_hash_function_reverse("\003org", 4, true, &h1);
-	h1 = isc_hash_function_reverse("\007example", 8, true, &h1);
-
-	h2 = isc_hash_function_reverse("\007example\003org\000", 13,
-				       true, NULL);
-
-	assert_int_equal(h1, h2);
-
 	/* Immutability of hash function */
-	h1 = isc_hash_function_reverse(NULL, 0, true, NULL);
-	h2 = isc_hash_function_reverse(NULL, 0, true, NULL);
+	h1 = isc_hash_function_reverse(NULL, 0, true);
+	h2 = isc_hash_function_reverse(NULL, 0, true);
 
 	assert_int_equal(h1, h2);
 
 	/* Hash function characteristics */
-	h1 = isc_hash_function_reverse("Hello world", 12, true, NULL);
-	h2 = isc_hash_function_reverse("Hello world", 12, true, NULL);
+	h1 = isc_hash_function_reverse("Hello world", 12, true);
+	h2 = isc_hash_function_reverse("Hello world", 12, true);
 
 	assert_int_equal(h1, h2);
 
 	/* Case */
-	h1 = isc_hash_function_reverse("Hello world", 12, false, NULL);
-	h2 = isc_hash_function_reverse("heLLo WorLd", 12, false, NULL);
+	h1 = isc_hash_function_reverse("Hello world", 12, false);
+	h2 = isc_hash_function_reverse("heLLo WorLd", 12, false);
 
 	assert_int_equal(h1, h2);
 
 	/* Unequal */
-	h1 = isc_hash_function_reverse("Hello world", 12, true, NULL);
-	h2 = isc_hash_function_reverse("heLLo WorLd", 12, true, NULL);
+	h1 = isc_hash_function_reverse("Hello world", 12, true);
+	h2 = isc_hash_function_reverse("heLLo WorLd", 12, true);
 
 	assert_true(h1 != h2);
-}
-
-/* Hash function initializer test */
-static void
-isc_hash_initializer_test(void **state) {
-	unsigned int h1;
-	unsigned int h2;
-
-	UNUSED(state);
-
-	h1 = isc_hash_function("Hello world", 12, true, NULL);
-	h2 = isc_hash_function("Hello world", 12, true, NULL);
-
-	assert_int_equal(h1, h2);
-
-	isc_hash_set_initializer(isc_hash_get_initializer());
-
-	/* Hash value must not change */
-	h2 = isc_hash_function("Hello world", 12, true, NULL);
-
-	assert_int_equal(h1, h2);
 }
 
 int
@@ -160,7 +115,6 @@ main(void) {
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test(isc_hash_function_test),
 		cmocka_unit_test(isc_hash_function_reverse_test),
-		cmocka_unit_test(isc_hash_initializer_test),
 	};
 
 	return (cmocka_run_group_tests(tests, NULL, NULL));

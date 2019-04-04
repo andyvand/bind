@@ -5350,9 +5350,7 @@ configure_view(dns_view_t *view, dns_viewlist_t *viewlist,
 		const cfg_obj_t *dyndb = cfg_listelt_value(element);
 
 		if (dctx == NULL) {
-			const void *hashinit = isc_hash_get_initializer();
-			CHECK(dns_dyndb_createctx(mctx, hashinit,
-						  named_g_lctx, view,
+			CHECK(dns_dyndb_createctx(mctx, named_g_lctx, view,
 						  named_g_server->zonemgr,
 						  named_g_server->task,
 						  named_g_timermgr, &dctx));

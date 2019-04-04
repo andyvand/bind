@@ -80,8 +80,6 @@ dyndb_init(isc_mem_t *mctx, const char *name, const char *parameters,
 		dns_log_setcontext(dctx->lctx);
 	}
 
-	isc_hash_set_initializer(dctx->hashinit);
-
 	s = isc_mem_strdup(mctx, parameters);
 	if (s == NULL) {
 		result = ISC_R_NOMEMORY;

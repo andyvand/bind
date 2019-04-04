@@ -222,9 +222,14 @@ isc_sockaddr_hash(const isc_sockaddr_t *sockaddr, bool address_only) {
 		p = 0;
 	}
 
-	h = isc_hash_function(s, length, true, NULL);
-	if (!address_only)
-		h = isc_hash_function(&p, sizeof(p), true, &h);
+	uint8_t buf[length + sizeof(p)];
+	memmove(buf, s, length);
+	if (!address_only) {
+		memmove(buf + length, &p, sizeof(p));
+		h = isc_hash_function(buf, length + sizeof(p), true);
+	} else {
+		h = isc_hash_function(buf, length, true);
+	}
 
 	return (h);
 }
