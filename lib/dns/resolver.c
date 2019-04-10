@@ -16,7 +16,6 @@
 #include <stdbool.h>
 
 #include <isc/counter.h>
-#include <isc/hmac.h>
 #include <isc/log.h>
 #include <isc/platform.h>
 #include <isc/print.h>
