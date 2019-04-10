@@ -1778,6 +1778,7 @@ compute_cookie(ns_client_t *client, uint32_t when, uint32_t nonce,
 	case ns_cookiealg_siphash24: {
 		unsigned char input[16 + 16] ISC_NONSTRING = { 0 };
 		size_t inputlen = 0;
+		isc_netaddr_t netaddr;
 		unsigned char *cp;
 
 		cp = isc_buffer_used(buf);
@@ -1789,6 +1790,7 @@ compute_cookie(ns_client_t *client, uint32_t when, uint32_t nonce,
 
 		memmove(input, cp, 16);
 
+		isc_netaddr_fromsockaddr(&netaddr, &client->peeraddr);
 		switch (netaddr.family) {
 		case AF_INET:
 			cp = (unsigned char *)&netaddr.type.in;
