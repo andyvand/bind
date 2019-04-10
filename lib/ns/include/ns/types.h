@@ -32,6 +32,5 @@ typedef enum {
 } ns_cookiealg_t;
 
 #define NS_COOKIE_VERSION_1 1
-#define NS_COOKIE_ALG_SIPHASH24 4
 
 #endif /* NS_TYPES_H */

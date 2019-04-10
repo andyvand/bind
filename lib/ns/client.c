@@ -1776,18 +1776,36 @@ compute_cookie(ns_client_t *client, uint32_t when, uint32_t nonce,
 
 	switch (client->sctx->cookiealg) {
 	case ns_cookiealg_siphash24: {
-		unsigned char input[4 + 4 + 16] ISC_NONSTRING = { 0 };
+		unsigned char input[16 + 16] ISC_NONSTRING = { 0 };
+		size_t inputlen = 0;
 		unsigned char *cp;
 
 		cp = isc_buffer_used(buf);
 		isc_buffer_putmem(buf, client->cookie, 8);
 		isc_buffer_putuint8(buf, NS_COOKIE_VERSION_1);
-		isc_buffer_putuint8(buf, NS_COOKIE_ALG_SIPHASH24);
+		isc_buffer_putuint8(buf, 0); /* Reserved */
 		isc_buffer_putuint16(buf, 0); /* Reserved */
 		isc_buffer_putuint32(buf, when);
 
 		memmove(input, cp, 16);
-		isc_siphash24(secret, input, 16, digest);
+
+		switch (netaddr.family) {
+		case AF_INET:
+			cp = (unsigned char *)&netaddr.type.in;
+			memmove(input + 16, cp, 4);
+			inputlen = 20;
+			break;
+		case AF_INET6:
+			cp = (unsigned char *)&netaddr.type.in6;
+			memmove(input + 16, cp, 16);
+			inputlen = 32;
+			break;
+		default:
+			INSIST(0);
+			ISC_UNREACHABLE();
+		}
+
+		isc_siphash24(secret, input, inputlen, digest);
 		isc_buffer_putmem(buf, digest, 8);
 		break;
 	}
@@ -1822,6 +1840,9 @@ compute_cookie(ns_client_t *client, uint32_t when, uint32_t nonce,
 			isc_aes128_crypt(client->sctx->secret, input + 8,
 					 digest);
 			break;
+		default:
+			INSIST(0);
+			ISC_UNREACHABLE();
 		}
 		for (i = 0; i < 8; i++)
 			digest[i] ^= digest[i + 8];
