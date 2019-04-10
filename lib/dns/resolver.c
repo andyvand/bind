@@ -16,18 +16,18 @@
 #include <stdbool.h>
 
 #include <isc/counter.h>
+#include <isc/hmac.h>
 #include <isc/log.h>
 #include <isc/platform.h>
 #include <isc/print.h>
 #include <isc/string.h>
 #include <isc/random.h>
+#include <isc/siphash.h>
 #include <isc/socket.h>
 #include <isc/stats.h>
 #include <isc/task.h>
 #include <isc/timer.h>
 #include <isc/util.h>
-
-#include <isc/aes.h>
 
 #include <dns/acl.h>
 #include <dns/adb.h>
@@ -2262,26 +2262,30 @@ add_triededns512(fetchctx_t *fctx, isc_sockaddr_t *address) {
 
 static void
 compute_cc(resquery_t *query, unsigned char *cookie, size_t len) {
-	unsigned char digest[ISC_AES_BLOCK_LENGTH];
-	unsigned char input[16];
+	uint8_t digest[ISC_SIPHASH24_TAG_LENGTH] ISC_NONSTRING = { 0 };
 	isc_netaddr_t netaddr;
-	unsigned int i;
 
 	INSIST(len >= 8U);
+	INSIST(sizeof(query->fctx->res->view->secret) >= ISC_SIPHASH24_KEY_LENGTH);
 
 	isc_netaddr_fromsockaddr(&netaddr, &query->addrinfo->sockaddr);
 	switch (netaddr.family) {
 	case AF_INET:
-		memmove(input, (unsigned char *)&netaddr.type.in, 4);
-		memset(input + 4, 0, 12);
+		isc_siphash24(query->fctx->res->view->secret,
+			      (uint8_t *)&netaddr.type.in, 4,
+			      digest);
 		break;
 	case AF_INET6:
-		memmove(input, (unsigned char *)&netaddr.type.in6, 16);
+		isc_siphash24(query->fctx->res->view->secret,
+			      (uint8_t *)&netaddr.type.in6, 16,
+			      digest);
 		break;
+	default:
+		INSIST(0);
+		ISC_UNREACHABLE();
 	}
-	isc_aes128_crypt(query->fctx->res->view->secret, input, digest);
-	for (i = 0; i < 8; i++)
-		digest[i] ^= digest[i + 8];
+
+	/* Store the first eight bytes of digest to the client cookie */
 	memmove(cookie, digest, 8);
 }
 

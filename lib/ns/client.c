@@ -1768,7 +1768,7 @@ static void
 compute_cookie(ns_client_t *client, uint32_t when, uint32_t nonce,
 	       const unsigned char *secret, isc_buffer_t *buf)
 {
-	unsigned char digest[ISC_MAX_MD_SIZE];
+	unsigned char digest[ISC_MAX_MD_SIZE] ISC_NONSTRING = { 0 };;
 	STATIC_ASSERT(ISC_MAX_MD_SIZE >= ISC_SIPHASH24_TAG_LENGTH,
 		      "You need to increase the digest buffer.");
 	STATIC_ASSERT(ISC_MAX_MD_SIZE >= ISC_AES_BLOCK_LENGTH,
@@ -1776,10 +1776,9 @@ compute_cookie(ns_client_t *client, uint32_t when, uint32_t nonce,
 
 	switch (client->sctx->cookiealg) {
 	case ns_cookiealg_siphash24: {
-		unsigned char input[4 + 4 + 16];
+		unsigned char input[4 + 4 + 16] ISC_NONSTRING = { 0 };
 		unsigned char *cp;
 
-		memset(input, 0, sizeof(input));
 		cp = isc_buffer_used(buf);
 		isc_buffer_putmem(buf, client->cookie, 8);
 		isc_buffer_putuint8(buf, NS_COOKIE_VERSION_1);
@@ -1793,12 +1792,11 @@ compute_cookie(ns_client_t *client, uint32_t when, uint32_t nonce,
 		break;
 	}
 	case ns_cookiealg_aes: {
-		unsigned char input[4 + 4 + 16];
+		unsigned char input[4 + 4 + 16] ISC_NONSTRING = { 0 };
 		isc_netaddr_t netaddr;
 		unsigned char *cp;
 		unsigned int i;
 
-		memset(input, 0, sizeof(input));
 		cp = isc_buffer_used(buf);
 		isc_buffer_putmem(buf, client->cookie, 8);
 		isc_buffer_putuint32(buf, nonce);

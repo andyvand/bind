@@ -857,7 +857,7 @@ check_options(const cfg_obj_t *options, isc_log_t *logctx, isc_mem_t *mctx,
 	dns_name_t *name;
 	isc_buffer_t b;
 	uint32_t lifetime = 3600;
-	const char *ccalg = "aes";
+	const char *ccalg = "siphash24";
 
 	/*
 	 * { "name", scale, value }
