@@ -2368,13 +2368,13 @@ AC_SUBST([KYUA])
 #
 
 save_LDFLAGS=$LDFLAGS
-LDFLAGS="--wrap=printf"
-
+LDFLAGS="-Wl,-wrap,exit"
 LD_WRAP_TESTS=false
 enable_ld_wrap=no
 AC_MSG_CHECKING([for linker support for --wrap option])
 AC_LINK_IFELSE(
-    [AC_LANG_PROGRAM([#include <stdio.h>], [__wrap_printf("success"); return (0);])],
+    [AC_LANG_PROGRAM([[void __wrap_exit (int s) { __real_exit (0); }]],
+                     [[exit (1);]])],
     [enable_ld_wrap=yes
      LD_WRAP_TESTS=true
      AC_DEFINE([LD_WRAP], [1], [define if the linker supports --wrap option])
