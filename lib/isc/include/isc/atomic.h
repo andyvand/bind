@@ -10,13 +10,14 @@
  */
 
 #pragma once
-
+#include <isc/mutexatomic.h>
+#if 0
 #if HAVE_STDATOMIC_H
 #include <stdatomic.h>
 #else
 #include <isc/stdatomic.h>
 #endif
-
+#endif
 /*
  * We define a few additional macros to make things easier
  */
