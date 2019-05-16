@@ -84,6 +84,7 @@ struct dns_view {
 	isc_mem_t *			mctx;
 	dns_rdataclass_t		rdclass;
 	char *				name;
+	bool				is_default;
 	dns_zt_t *			zonetable;
 	dns_resolver_t *		resolver;
 	dns_adb_t *			adb;
@@ -273,7 +274,8 @@ struct dns_view {
 
 isc_result_t
 dns_view_create(isc_mem_t *mctx, dns_rdataclass_t rdclass,
-		const char *name, dns_view_t **viewp);
+		const char *name, bool is_default,
+		dns_view_t **viewp);
 /*%<
  * Create a view.
  *
@@ -346,6 +348,9 @@ dns_view_flushanddetach(dns_view_t **viewp);
  *
  *\li	*viewp is NULL.
  */
+
+void
+dns_view_finaldetach(dns_view_t **viewp, bool flush);
 
 void
 dns_view_weakattach(dns_view_t *source, dns_view_t **targetp);

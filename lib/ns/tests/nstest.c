@@ -315,7 +315,7 @@ ns_test_makeview(const char *name, bool with_cache,
 	dns_view_t *view = NULL;
 	isc_result_t result;
 
-	CHECK(dns_view_create(mctx, dns_rdataclass_in, name, &view));
+	CHECK(dns_view_create(mctx, dns_rdataclass_in, name, false, &view));
 
 	if (with_cache) {
 		CHECK(dns_cache_create(mctx, mctx, taskmgr, timermgr,
@@ -361,7 +361,7 @@ ns_test_makezone(const char *name, dns_zone_t **zonep, dns_view_t *view,
 	dns_name_t *origin;
 
 	if (view == NULL)
-		CHECK(dns_view_create(mctx, dns_rdataclass_in, "view", &view));
+		CHECK(dns_view_create(mctx, dns_rdataclass_in, "view", false, &view));
 	else if (!keepview)
 		keepview = true;
 

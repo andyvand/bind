@@ -77,7 +77,8 @@ static void req_shutdown(isc_task_t *task, isc_event_t *event);
 
 isc_result_t
 dns_view_create(isc_mem_t *mctx, dns_rdataclass_t rdclass,
-		const char *name, dns_view_t **viewp)
+		const char *name, bool is_default,
+		dns_view_t **viewp)
 {
 	dns_view_t *view;
 	isc_result_t result;
@@ -102,6 +103,7 @@ dns_view_create(isc_mem_t *mctx, dns_rdataclass_t rdclass,
 		result = ISC_R_NOMEMORY;
 		goto cleanup_view;
 	}
+	view->is_default = is_default;
 
 	result = isc_file_sanitize(NULL, view->name, "nta",
 				   buffer, sizeof(buffer));
@@ -578,20 +580,24 @@ dns_view_attach(dns_view_t *source, dns_view_t **targetp) {
 
 	REQUIRE(DNS_VIEW_VALID(source));
 	REQUIRE(targetp != NULL && *targetp == NULL);
-
-	isc_refcount_increment(&source->references);
-
+	if (!source->is_default) {
+		isc_refcount_increment(&source->references);
+	}
+	
 	*targetp = source;
 }
 
 static void
-view_flushanddetach(dns_view_t **viewp, bool flush) {
+view_flushanddetach(dns_view_t **viewp, bool flush, bool final) {
 	REQUIRE(viewp != NULL && DNS_VIEW_VALID(*viewp));
 	dns_view_t *view = *viewp;
 	*viewp = NULL;
 
 	if (flush) {
 		view->flush = flush;
+	}
+	if (view->is_default && !final) {
+		return;
 	}
 
 	bool done = false;
@@ -645,7 +651,6 @@ view_flushanddetach(dns_view_t **viewp, bool flush) {
 		}
 	}
 
-	*viewp = NULL;
 
 	if (done) {
 		destroy(view);
@@ -654,12 +659,17 @@ view_flushanddetach(dns_view_t **viewp, bool flush) {
 
 void
 dns_view_flushanddetach(dns_view_t **viewp) {
-	view_flushanddetach(viewp, true);
+	view_flushanddetach(viewp, true, false);
 }
 
 void
 dns_view_detach(dns_view_t **viewp) {
-	view_flushanddetach(viewp, false);
+	view_flushanddetach(viewp, false, false);
+}
+
+void
+dns_view_finaldetach(dns_view_t **viewp, bool flush) {
+	view_flushanddetach(viewp, flush, true);
 }
 
 static isc_result_t

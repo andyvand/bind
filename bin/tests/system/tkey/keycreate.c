@@ -268,7 +268,7 @@ main(int argc, char *argv[]) {
 	RUNCHECK(dns_tkeyctx_create(mctx, &tctx));
 
 	view = NULL;
-	RUNCHECK(dns_view_create(mctx, 0, "_test", &view));
+	RUNCHECK(dns_view_create(mctx, 0, "_test", false, &view));
 	dns_view_setkeyring(view, ring);
 	dns_tsigkeyring_detach(&ring);
 
