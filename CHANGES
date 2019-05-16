@@ -1,3 +1,6 @@
+5235	[bug]		Some statistics data was not being displayed.
+			Add shading to the zone tables. [GL #1030]
+
 5234.	[port]		arm: just use the compiler's default support for
 			yield. [GL #981]
 
