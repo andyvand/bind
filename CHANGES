@@ -1,3 +1,6 @@
+5236.	[func]		Allow statistics groups display to be toggleable.
+			[GL #1030]
+
 5235.	[bug]		Some statistics data was not being displayed.
 			Add shading to the zone tables. [GL #1030]
 
