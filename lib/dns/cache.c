@@ -19,6 +19,7 @@
 #include <isc/json.h>
 #include <isc/mem.h>
 #include <isc/print.h>
+#include <isc/refcount.h>
 #include <isc/string.h>
 #include <isc/stats.h>
 #include <isc/task.h>
@@ -126,9 +127,9 @@ struct dns_cache {
 	isc_mem_t		*mctx;		/* Main cache memory */
 	isc_mem_t		*hmctx;		/* Heap memory */
 	char			*name;
+	isc_refcount_t		references;
 
 	/* Locked by 'lock'. */
-	int			references;
 	int			live_tasks;
 	dns_rdataclass_t	rdclass;
 	dns_db_t		*db;
@@ -213,7 +214,7 @@ dns_cache_create(isc_mem_t *cmctx, isc_mem_t *hmctx, isc_taskmgr_t *taskmgr,
 	isc_mutex_init(&cache->lock);
 	isc_mutex_init(&cache->filelock);
 
-	cache->references = 1;
+	isc_refcount_init(&cache->references, 1);
 	cache->live_tasks = 0;
 	cache->rdclass = rdclass;
 	cache->serve_stale_ttl = 0;
@@ -336,7 +337,7 @@ cache_free(dns_cache_t *cache) {
 	int i;
 
 	REQUIRE(VALID_CACHE(cache));
-	REQUIRE(cache->references == 0);
+	REQUIRE(isc_refcount_current(&cache->references) == 0);
 
 	isc_mem_setwater(cache->mctx, NULL, NULL, 0, 0);
 
@@ -401,9 +402,7 @@ dns_cache_attach(dns_cache_t *cache, dns_cache_t **targetp) {
 	REQUIRE(VALID_CACHE(cache));
 	REQUIRE(targetp != NULL && *targetp == NULL);
 
-	LOCK(&cache->lock);
-	cache->references++;
-	UNLOCK(&cache->lock);
+	isc_refcount_increment(&cache->references);
 
 	*targetp = cache;
 }
@@ -416,18 +415,12 @@ dns_cache_detach(dns_cache_t **cachep) {
 	REQUIRE(cachep != NULL);
 	cache = *cachep;
 	REQUIRE(VALID_CACHE(cache));
-
-	LOCK(&cache->lock);
-	REQUIRE(cache->references > 0);
-	cache->references--;
-	if (cache->references == 0) {
-		cache->cleaner.overmem = false;
-		free_cache = true;
-	}
-
 	*cachep = NULL;
 
-	if (free_cache) {
+	if (isc_refcount_decrement(&cache->references) == 1) {
+		LOCK(&cache->lock);
+		free_cache = true;
+		cache->cleaner.overmem = false;
 		/*
 		 * When the cache is shut down, dump it to a file if one is
 		 * specified.
@@ -446,12 +439,13 @@ dns_cache_detach(dns_cache_t **cachep) {
 			isc_task_shutdown(cache->cleaner.task);
 			free_cache = false;
 		}
+		UNLOCK(&cache->lock);
 	}
 
-	UNLOCK(&cache->lock);
 
-	if (free_cache)
+	if (free_cache) {
 		cache_free(cache);
+	}
 }
 
 void
@@ -1120,8 +1114,9 @@ cleaner_shutdown_action(isc_task_t *task, isc_event_t *event) {
 	cache->live_tasks--;
 	INSIST(cache->live_tasks == 0);
 
-	if (cache->references == 0)
+	if (isc_refcount_current(&cache->references) == 0) {
 		should_free = true;
+	}
 
 	/*
 	 * By detaching the timer in the context of its task,
