@@ -1900,14 +1900,12 @@ named_zone_configure(const cfg_obj_t *config, const cfg_obj_t *vconfig,
 			 * on for BIND 8 compatibility.
 			 */
 			view = dns_zone_getview(zone);
-			if (view != NULL && view->is_default) {
+			if (view != NULL && strcmp(view->name, "_default") == 0)
 				alt = true;
-			} else {
+			else
 				alt = false;
-			}
-		} else {
+		} else
 			alt = cfg_obj_asboolean(obj);
-		}
 		dns_zone_setoption(mayberaw, DNS_ZONEOPT_USEALTXFRSRC, alt);
 
 		obj = NULL;

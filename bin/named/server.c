@@ -1868,7 +1868,7 @@ dns64_reverse(dns_view_t *view, isc_mem_t *mctx, isc_netaddr_t *na,
 	REQUIRE(prefixlen == 32 || prefixlen == 40 || prefixlen == 48 ||
 		prefixlen == 56 || prefixlen == 64 || prefixlen == 96);
 
-	if (view->is_default) {
+	if (!strcmp(viewname, "_default")) {
 		sep = "";
 		viewname = "";
 	}
@@ -3453,7 +3453,7 @@ create_empty_zone(dns_zone_t *zone, dns_name_t *name, dns_view_t *view,
 	dns_zone_setview(zone, view);
 	CHECK(dns_view_addzone(view, zone));
 
-	if (view->is_default) {
+	if (!strcmp(viewname, "_default")) {
 		sep = "";
 		viewname = "";
 	}
@@ -4399,7 +4399,7 @@ configure_view(dns_view_t *view, dns_viewlist_t *viewlist,
 	 */
 	obj = NULL;
 	result = named_config_get(maps, "cache-file", &obj);
-	if (result == ISC_R_SUCCESS && view->is_default) {
+	if (result == ISC_R_SUCCESS && strcmp(view->name, "_bind") != 0) {
 		CHECK(dns_cache_setfilename(cache, cfg_obj_asstring(obj)));
 		if (!reused_cache && !shared_cache)
 			CHECK(dns_cache_load(cache));
@@ -5953,7 +5953,7 @@ create_view(const cfg_obj_t *vconfig, dns_viewlist_t *viewlist,
 		return (result);
 	INSIST(view == NULL);
 
-	result = dns_view_create(named_g_mctx, viewclass, viewname, !strcmp(viewname, "_default"), &view);
+	result = dns_view_create(named_g_mctx, viewclass, viewname, &view);
 	if (result != ISC_R_SUCCESS)
 		return (result);
 
@@ -6430,9 +6430,10 @@ add_keydata_zone(dns_view_t *view, const char *directory, isc_mem_t *mctx) {
 	CHECK(dns_zonemgr_createzone(named_g_server->zonemgr, &zone));
 	CHECK(dns_zone_setorigin(zone, dns_rootname));
 
+	defaultview = (strcmp(view->name, "_default") == 0);
 	CHECK(isc_file_sanitize(directory,
-				view->is_default ? "managed-keys" : view->name,
-				view->is_default ? "bind" : "mkeys",
+				defaultview ? "managed-keys" : view->name,
+				defaultview ? "bind" : "mkeys",
 				filename, sizeof(filename)));
 	CHECK(dns_zone_setfile(zone, filename, dns_masterformat_text,
 			       &dns_master_style_default));
@@ -9597,6 +9598,16 @@ shutdown_server(isc_task_t *task, isc_event_t *event) {
 
 	(void) named_server_saventa(server);
 
+	for (view = ISC_LIST_HEAD(server->viewlist);
+	     view != NULL;
+	     view = view_next) {
+		view_next = ISC_LIST_NEXT(view, link);
+		ISC_LIST_UNLINK(server->viewlist, view, link);
+		if (flush)
+			dns_view_flushanddetach(&view);
+		else
+			dns_view_detach(&view);
+	}
 
 	/*
 	 * Shut down all dyndb instances.
@@ -9618,14 +9629,6 @@ shutdown_server(isc_task_t *task, isc_event_t *event) {
 	ns_interfacemgr_detach(&server->interfacemgr);
 
 	dns_dispatchmgr_destroy(&named_g_dispatchmgr);
-
-	for (view = ISC_LIST_HEAD(server->viewlist);
-	     view != NULL;
-	     view = view_next) {
-		view_next = ISC_LIST_NEXT(view, link);
-		ISC_LIST_UNLINK(server->viewlist, view, link);
-		dns_view_finaldetach(&view, flush);
-	}
 
 	dns_zonemgr_shutdown(server->zonemgr);
 
@@ -11940,7 +11943,7 @@ named_server_sync(named_server_t *server, isc_lex_t *lex, isc_buffer_t **text) {
 	isc_task_endexclusive(server->task);
 
 	view = dns_zone_getview(zone);
-	if (view->is_default ||
+	if (strcmp(view->name, "_default") == 0 ||
 	    strcmp(view->name, "_bind") == 0)
 	{
 		vname = "";
@@ -12065,7 +12068,7 @@ named_server_freeze(named_server_t *server, bool freeze,
 	}
 
 	view = dns_zone_getview(mayberaw);
-	if (view->is_default ||
+	if (strcmp(view->name, "_default") == 0 ||
 	    strcmp(view->name, "_bind") == 0)
 	{
 		vname = "";

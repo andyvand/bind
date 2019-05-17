@@ -357,7 +357,7 @@ createview(isc_mem_t *mctx, dns_rdataclass_t rdclass,
 	dns_view_t *view = NULL;
 	const char *dbtype;
 
-	result = dns_view_create(mctx, rdclass, DNS_CLIENTVIEW_NAME, false, &view);
+	result = dns_view_create(mctx, rdclass, DNS_CLIENTVIEW_NAME, &view);
 	if (result != ISC_R_SUCCESS)
 		return (result);
 

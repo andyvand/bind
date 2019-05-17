@@ -306,7 +306,7 @@ main(int argc, char *argv[]) {
 					    &requestmgr));
 
 	view = NULL;
-	RUNCHECK(dns_view_create(mctx, 0, "_test", false, &view));
+	RUNCHECK(dns_view_create(mctx, 0, "_test", &view));
 
 	RUNCHECK(isc_app_onrun(mctx, task, sendqueries, NULL));
 

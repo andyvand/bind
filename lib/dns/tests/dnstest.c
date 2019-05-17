@@ -213,7 +213,7 @@ dns_test_makeview(const char *name, dns_view_t **viewp) {
 	isc_result_t result;
 	dns_view_t *view = NULL;
 
-	CHECK(dns_view_create(mctx, dns_rdataclass_in, name, false, &view));
+	CHECK(dns_view_create(mctx, dns_rdataclass_in, name, &view));
 	*viewp = view;
 
 	return (ISC_R_SUCCESS);

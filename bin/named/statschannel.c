@@ -106,9 +106,8 @@ user_zonetype( dns_zone_t *zone ) {
 		return ("builtin");
 
 	view = dns_zone_getview(zone);
-	if (view != NULL && view->is_default) {
+	if (view != NULL && strcmp(view->name, "_bind") == 0)
 		return ("builtin");
-	}
 
 	ztype = dns_zone_gettype(zone);
 	for  (tp = typemap; tp->string != NULL && tp->type != ztype; tp++)
@@ -3599,7 +3598,7 @@ named_stats_dump(named_server_t *server, FILE *fp) {
 	     view = ISC_LIST_NEXT(view, link)) {
 		if (view->resquerystats == NULL)
 			continue;
-		if (view->is_default)
+		if (strcmp(view->name, "_default") == 0)
 			fprintf(fp, "[View: default]\n");
 		else
 			fprintf(fp, "[View: %s]\n", view->name);
@@ -3628,7 +3627,7 @@ named_stats_dump(named_server_t *server, FILE *fp) {
 	     view = ISC_LIST_NEXT(view, link)) {
 		if (view->resstats == NULL)
 			continue;
-		if (view->is_default)
+		if (strcmp(view->name, "_default") == 0)
 			fprintf(fp, "[View: default]\n");
 		else
 			fprintf(fp, "[View: %s]\n", view->name);
@@ -3642,7 +3641,7 @@ named_stats_dump(named_server_t *server, FILE *fp) {
 	for (view = ISC_LIST_HEAD(server->viewlist);
 	     view != NULL;
 	     view = ISC_LIST_NEXT(view, link)) {
-		if (view->is_default)
+		if (strcmp(view->name, "_default") == 0)
 			fprintf(fp, "[View: default]\n");
 		else
 			fprintf(fp, "[View: %s (Cache: %s)]\n", view->name,
@@ -3664,7 +3663,7 @@ named_stats_dump(named_server_t *server, FILE *fp) {
 		cacherrstats = dns_db_getrrsetstats(view->cachedb);
 		if (cacherrstats == NULL)
 			continue;
-		if (view->is_default)
+		if (strcmp(view->name, "_default") == 0)
 			fprintf(fp, "[View: default]\n");
 		else
 			fprintf(fp, "[View: %s (Cache: %s)]\n", view->name,
@@ -3686,7 +3685,7 @@ named_stats_dump(named_server_t *server, FILE *fp) {
 	     view = ISC_LIST_NEXT(view, link)) {
 		if (view->adbstats == NULL)
 			continue;
-		if (view->is_default)
+		if (strcmp(view->name, "_default") == 0)
 			fprintf(fp, "[View: default]\n");
 		else
 			fprintf(fp, "[View: %s]\n", view->name);
