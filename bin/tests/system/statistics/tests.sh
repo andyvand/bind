@@ -158,7 +158,7 @@ ret=0
 echo_i "checking bind9.xsl vs xml ($n)"
 if $FEATURETEST --have-libxml2 && [ -x "${CURL}" ] && [ -x "${XSLTPROC}" ]  ; then
     $DIGCMD +notcp +recurse @10.53.0.3 soa . > /dev/null 2>&1
-    $DIGCMD +notcp +recurse @10.53.0.3 soa example  /dev/null 2>&1
+    $DIGCMD +notcp +recurse @10.53.0.3 soa example > /dev/null 2>&1
     ${CURL} http://10.53.0.3:${EXTRAPORT1}/xml/v3 > curl.out.${n}.xml 2>/dev/null || ret=1
     ${CURL} http://10.53.0.3:${EXTRAPORT1}/bind9.xsl > curl.out.${n}.xsl 2>/dev/null || ret=1
     ${XSLTPROC} curl.out.${n}.xsl - < curl.out.${n}.xml > xsltproc.out.${n} 2>/dev/null || ret=1
