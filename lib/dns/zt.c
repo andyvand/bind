@@ -225,7 +225,7 @@ flush(dns_zone_t *zone, void *uap) {
 
 static void
 zt_destroy(dns_zt_t *zt) {
-	if (atomic_load_release(&zt->flush)) {
+	if (atomic_load_explicit(&zt->flush, memory_order_seq_cst)) {
 		(void)dns_zt_apply(zt, false, NULL, flush, NULL);
 	}
 	dns_rbt_destroy(&zt->table);
@@ -244,7 +244,7 @@ zt_flushanddetach(dns_zt_t **ztp, bool need_flush) {
 	*ztp = NULL;
 
 	if (need_flush) {
-		atomic_store_acquire(&zt->flush, true);
+		atomic_store_explicit(&zt->flush, true, memory_order_seq_cst);
 	}
 
 	if (isc_refcount_decrement(&zt->references) == 1) {
