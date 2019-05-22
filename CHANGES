@@ -1,3 +1,6 @@
+5249.	[bug]		filter-aaaa: named crashed upon shutdown if it was in
+			the process of recursing for A RRsets. [GL #1040]
+
 5248.	[func]		To clarify the configuration of DNSSEC keys,
 			the "managed-keys" and "trusted-keys" options
 			have both been deprecated.  The new "dnssec-keys"
