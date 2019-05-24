@@ -32,6 +32,7 @@
 #include <unistd.h>
 
 #include <isc/app.h>
+#include <isc/atomic.h>
 #include <isc/base32.h>
 #include <isc/commandline.h>
 #include <isc/event.h>
@@ -45,8 +46,8 @@
 #include <isc/print.h>
 #include <isc/random.h>
 #include <isc/rwlock.h>
-#include <isc/serial.h>
 #include <isc/safe.h>
+#include <isc/serial.h>
 #include <isc/stdio.h>
 #include <isc/string.h>
 #include <isc/task.h>
