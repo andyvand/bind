@@ -601,7 +601,8 @@ isc_rwlock_unlock(isc_rwlock_t *rwl, isc_rwlocktype_t type) {
 		atomic_fetch_sub_relaxed(&rwl->cnt_and_flag, WRITER_ACTIVE);
 		atomic_fetch_add_relaxed(&rwl->write_completions, 1);
 
-		if (rwl->write_granted >= rwl->write_quota ||
+		if ((atomic_load_relaxed(&rwl->write_granted) >=
+		     rwl->write_quota) ||
 		    (atomic_load_relaxed(&rwl->write_requests) ==
 		    atomic_load_relaxed(&rwl->write_completions)) ||
 		    (atomic_load_relaxed(&rwl->cnt_and_flag)
