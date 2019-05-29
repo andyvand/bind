@@ -488,7 +488,6 @@ isc_timer_attach(isc_timer_t *timer0, isc_timer_t **timerp) {
 void
 isc_timer_detach(isc_timer_t **timerp) {
 	isc__timer_t *timer;
-	bool free_timer = false;
 
 	/*
 	 * Detach *timerp from its timer.
@@ -496,13 +495,12 @@ isc_timer_detach(isc_timer_t **timerp) {
 
 	REQUIRE(timerp != NULL);
 	timer = (isc__timer_t *)*timerp;
+	*timerp = NULL;
 	REQUIRE(VALID_TIMER(timer));
 
 	if (isc_refcount_decrement(&timer->references) == 1) {
 		destroy(timer);
 	}
-
-	*timerp = NULL;
 }
 
 static void
