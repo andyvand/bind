@@ -14,7 +14,6 @@ set -e
 SELF="$(basename $0)"
 SELF="${SELF/-/ }"
 
-STATE_FILE=".git/REPLAY_MERGE"
 DONT_PUSH=${DONT_PUSH:=false}
 DONT_ACCEPT=${DONT_ACCEPT:=false}
 
@@ -62,7 +61,7 @@ die_before_push() {
 }
 
 die_if_wrong_dir() {
-	if [[ ! -d ".git" ]]; then
+	if [[ ! -d "$WORKDIR" ]]; then
 		die "You need to run this command from the toplevel of the working tree."
 	fi
 }
@@ -98,6 +97,14 @@ branch_exists() {
 	else
 		return 1
 	fi
+}
+
+get_workdir() {
+	WORKDIR=".git"
+	if [[ -f ".git" ]]; then
+		WORKDIR="$(cat .git |sed -ne 's/^gitdir: \(.*\)$/\1/p')"
+	fi
+	STATE_FILE="$WORKDIR/REPLAY_MERGE"
 }
 
 go() {
@@ -212,6 +219,7 @@ cleanup() {
 }
 
 cd $(git rev-parse --show-toplevel)
+get_workdir
 
 next_action="go"
 while [[ $# -ge 1 ]]; do
