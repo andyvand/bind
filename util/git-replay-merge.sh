@@ -39,13 +39,6 @@ die_with_usage() {
 	    "	${SELF} --abort"
 }
 
-verify_gitlab_cli() {
-	which gitlab >/dev/null 2>&1 || \
-		die "You need to have gitlab cli installed and configured: "\
-		    "" \
-		    "$ gem install --user-install gitlab"
-}
-
 die_with_continue_instructions() {
 	die ""								\
 	    "Replay interrupted.  Conflicts need to be fixed manually."	\
@@ -89,6 +82,21 @@ die_if_local_behind_target() {
 	fi
 }
 
+get_workdir() {
+	WORKDIR=".git"
+	if [[ -f ".git" ]]; then
+		WORKDIR="$(sed -n 's/^gitdir: \(.*\)$/\1/p' ".git")"
+	fi
+	STATE_FILE="${WORKDIR}/REPLAY_MERGE"
+}
+
+verify_gitlab_cli() {
+	which gitlab >/dev/null 2>&1 || \
+		die "You need to have gitlab cli installed and configured: "\
+		    "" \
+		    "$ gem install --user-install gitlab"
+}
+
 branch_exists() {
 	ESCAPED_BRANCH_NAME=${1//\//\\\/}
 	BRANCH_REGEX="/^(remotes\/)?${ESCAPED_BRANCH_NAME}$/"
@@ -97,14 +105,6 @@ branch_exists() {
 	else
 		return 1
 	fi
-}
-
-get_workdir() {
-	WORKDIR=".git"
-	if [[ -f ".git" ]]; then
-		WORKDIR="$(sed -n 's/^gitdir: \(.*\)$/\1/p' ".git")"
-	fi
-	STATE_FILE="${WORKDIR}/REPLAY_MERGE"
 }
 
 go() {
