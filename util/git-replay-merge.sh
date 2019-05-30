@@ -102,9 +102,9 @@ branch_exists() {
 get_workdir() {
 	WORKDIR=".git"
 	if [[ -f ".git" ]]; then
-		WORKDIR="$(cat .git |sed -ne 's/^gitdir: \(.*\)$/\1/p')"
+		WORKDIR="$(sed -n 's/^gitdir: \(.*\)$/\1/p' ".git")"
 	fi
-	STATE_FILE="$WORKDIR/REPLAY_MERGE"
+	STATE_FILE="${WORKDIR}/REPLAY_MERGE"
 }
 
 go() {
