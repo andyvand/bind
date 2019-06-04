@@ -83,11 +83,11 @@ die_if_local_behind_target() {
 }
 
 get_workdir() {
-	WORKDIR=".git"
-	if [[ -f ".git" ]]; then
-		WORKDIR="$(sed -n 's/^gitdir: \(.*\)$/\1/p' ".git")"
+	DOTGIT="$(git rev-parse --show-toplevel)/.git"
+	if [[ -f "${WORKDIR}" ]]; then
+		sed -n 's/^gitdir: //p' "${DOTGIT}"
 	fi
-	STATE_FILE="${WORKDIR}/REPLAY_MERGE"
+	echo "${DOTGIT}"
 }
 
 verify_gitlab_cli() {
@@ -218,8 +218,7 @@ cleanup() {
 	rm -f "${STATE_FILE}"
 }
 
-cd $(git rev-parse --show-toplevel)
-get_workdir
+STATE_FILE="$(get_workdir)/REPLAY_MERGE"
 
 next_action="go"
 while [[ $# -ge 1 ]]; do
