@@ -17356,8 +17356,8 @@ dns_zonemgr_unreachable(dns_zonemgr_t *zmgr, isc_sockaddr_t *remote,
 			if (result == ISC_R_SUCCESS) {
 				locktype = isc_rwlocktype_write;
 				zmgr->unreachable[i].last = seconds;
-				count = zmgr->unreachable[i].count;
 			}
+			count = zmgr->unreachable[i].count;
 			break;
 		}
 	}
